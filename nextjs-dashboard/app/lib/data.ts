@@ -1,4 +1,6 @@
 import postgres from 'postgres';
+import { formatCurrency } from './utils';
+
 import {
   CustomerField,
   CustomersTableType,
@@ -7,7 +9,7 @@ import {
   LatestInvoiceRaw,
   Revenue,
 } from './definitions';
-import { formatCurrency } from './utils';
+
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -23,6 +25,11 @@ export async function fetchRevenue() {
 
     // console.log('Data fetch completed after 3 seconds.');
 
+  // Adding disctinct key word make my queries appear single and not duplicated
+
+
+ 
+
     return data;
   } catch (error) {
     console.error('Database Error:', error);
@@ -32,12 +39,23 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   try {
-    const data = await sql<LatestInvoiceRaw[]>`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
-      LIMIT 5`;
+    const data = await sql<LatestInvoiceRaw[]>
+    
+  // Adding disctinct key word make my queries appear single and not duplicated
+    
+  `SELECT DISTINCT ON (customers.id) invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
+  FROM invoices
+  JOIN customers ON invoices.customer_id = customers.id
+  ORDER BY  customers.id, invoices.date DESC
+  LIMIT 5`;
+
+// When i used the below query it gives me duplicated values
+// const data = await sql<LatestInvoiceRaw[]>`
+//   SELECT invoices.amount, customers.name, customers.image_url, customers.email
+//   FROM invoices
+//   JOIN customers ON invoices.customer_id = customers.id
+//   ORDER BY invoices.date DESC
+//   LIMIT 5`;
 
     const latestInvoices = data.map((invoice) => ({
       ...invoice,
@@ -77,7 +95,7 @@ export async function fetchCardData() {
       numberOfCustomers,
       numberOfInvoices,
       totalPaidInvoices,
-      totalPendingInvoices,
+      totalPendingInvoices
     };
   } catch (error) {
     console.error('Database Error:', error);
@@ -159,7 +177,7 @@ export async function fetchInvoiceById(id: string) {
       // Convert amount from cents to dollars
       amount: invoice.amount / 100,
     }));
-
+   
     return invoice[0];
   } catch (error) {
     console.error('Database Error:', error);
