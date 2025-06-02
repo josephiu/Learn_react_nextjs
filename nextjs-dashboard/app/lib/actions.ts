@@ -1,11 +1,10 @@
-'use server';
-
+'use server'
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import postgres from 'postgres';
-import { exportPages } from 'next/dist/export/worker';
-import { error } from 'console';
+// import { exportPages } from 'next/dist/export/worker';
+// import { error } from 'console';
 
 import { signIn } from '../auth';
 import { AuthError } from 'next-auth';
@@ -68,7 +67,7 @@ export async function createInvoice(prevState: State, formData: FormData) {
       INSERT INTO invoices (customer_id, amount, status, date)
       VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
     `;
-  } catch (error) {
+  } catch (_error) {
     // If a database error occurs, return a more specific error.
     return {
       message: 'Database Error: Failed to Create Invoice.',
@@ -109,7 +108,7 @@ export async function createInvoice(prevState: State, formData: FormData) {
       SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
       WHERE id = ${id}
     `;
-  } catch (error) {
+  } catch (_error) {
     return { message: 'Database Error: Failed to Update Invoice.' };
   }
  
@@ -120,7 +119,7 @@ export async function createInvoice(prevState: State, formData: FormData) {
 
 
 export async function deleteInvoice(id: string) {
- throw new Error('failed to delete, Joseph did that')    
+//  throw new Error('failed to delete, Joseph did that')    
     await sql `DELETE FROM invoices WHERE id =  ${id}`;
     revalidatePath('/dashboard/invoices');
  
@@ -147,8 +146,6 @@ export async function authenticate(
     throw error;
   }
 }
-
-
 
 
 
